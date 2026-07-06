@@ -1,0 +1,17 @@
+.search-input {
+    min-width: 260px;
+    padding: 8px;
+}
+
+.input-hours {
+    width: 80px;
+    padding: 6px;
+}
+
+.date-input {
+    padding: 6px;
+}
+
+.allocations-description {
+    margin: 0;
+}

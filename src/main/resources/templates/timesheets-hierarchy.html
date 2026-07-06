@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Списание времени — иерархия</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/timesheet.css}">
+
+    <script th:src="@{/js/timesheet-hierarchy.js}" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-content">
+        <h1>Списание времени (иерархия)</h1>
+    </div>
+</header>
+
+<main class="container">
+    <div class="card filters-card">
+        <div class="filters-header">
+            <h2>Параметры</h2>
+        </div>
+
+        <form method="get" class="search-filter" th:action="@{/timesheets-hierarchy}" id="dateFilterForm">
+            <input type="hidden" name="managerMode" th:value="${managerMode}">
+
+            <input type="text" id="timesheetsSearch" name="searchQuery" class="search-input"
+                   placeholder="Поиск по сотруднику, отделу, руководителю, adLogin...">
+
+            <div class="date-filters">
+                <div class="date-input-group">
+                    <label for="dateFrom">С:</label>
+                    <input type="date" id="dateFrom" name="dateFrom" class="date-input" th:value="${dateFrom}" required>
+                </div>
+                <div class="date-input-group">
+                    <label for="dateTo">По:</label>
+                    <input type="date" id="dateTo" name="dateTo" class="date-input" th:value="${dateTo}" required>
+                </div>
+            </div>
+
+            <input type="hidden" name="filterDivision" id="hiddenFilterDivision">
+            <input type="hidden" name="filterManager" id="hiddenFilterManager">
+            <input type="hidden" name="filterEmployee" id="hiddenFilterEmployee">
+            <input type="hidden" name="filterColor" id="hiddenFilterColor">
+            <input type="hidden" name="filterHoursFrom" id="hiddenFilterHoursFrom">
+            <input type="hidden" name="filterHoursTo" id="hiddenFilterHoursTo">
+
+            <button type="submit" class="btn btn-primary" onclick="updateHiddenFilters()">Применить</button>
+            <button type="button" class="btn btn-secondary" onclick="setCurrentWeek()">Текущая неделя</button>
+            <button type="button" class="btn btn-success" onclick="exportSummaryToExcel()">Сохранить в Excel</button>
+        </form>
+
+        <div class="filters-container">
+            <select id="filterDivision" class="select2-init" data-placeholder="Все отделы" style="width: 200px;">
+                <option value=""></option>
+            </select>
+            <select id="filterManager" class="select2-init" data-placeholder="Все руководители" style="width: 200px;">
+                <option value=""></option>
+            </select>
+            <select id="filterEmployee" class="select2-init" data-placeholder="Все сотрудники" style="width: 200px;">
+                <option value=""></option>
+            </select>
+            <select id="filterColor" class="select2-simple" data-placeholder="Все цвета" style="width: 150px;">
+                <option value="">Все цвета</option>
+                <option value="hours-green">Зеленые (&gt;=35 ч)</option>
+                <option value="hours-yellow">Желтые (30-34 ч)</option>
+                <option value="hours-red">Красные (&lt;30 ч)</option>
+            </select>
+            <input id="filterHoursFrom" type="number" placeholder="От" class="input-hours" min="0" step="0.5">
+            <input id="filterHoursTo" type="number" placeholder="До" class="input-hours" min="0" step="0.5">
+            <button id="clearFilters" class="btn-clear" type="button">Сбросить</button>
+        </div>
+    </div>
+
+    <div class="card hierarchy-card">
+        <div class="card-header">
+            <p class="allocations-description">Всего строк: <span id="rowCount">0</span></p>
+        </div>
+
+        <div class="table-wrapper">
+            <div id="loading" class="loading-state" style="display: none;">
+                <div class="spinner"></div>
+                <p>Загрузка данных...</p>
+            </div>
+
+            <table id="hierarchyTable" class="hierarchy-table">
+                <thead></thead>
+                <tbody id="hierarchyBody"></tbody>
+            </table>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">&#128193;</div>
+            <p>Данные не найдены</p>
+        </div>
+    </div>
+</main>
+
+<div id="detailsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalEmployeeName">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalEmployeeName">Детали списаний</h3>
+            <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="modalLoading" class="modal-loading">Загрузка...</div>
+            <div id="modalError" class="modal-error" style="display:none;">Ошибка загрузки данных</div>
+
+            <div id="modalDetails" style="display:none;">
+                <table class="details-table">
+                    <thead>
+                    <tr>
+                        <th>Номер задачи</th>
+                        <th>Задача</th>
+                        <th>Создана</th>
+                        <th>Дата списания</th>
+                        <th style="text-align:right;">Часы</th>
+                    </tr>
+                    </thead>
+                    <tbody id="detailsTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="modal-pagination" id="modalPagination" style="display:none;">
+                <button type="button" id="modalPrev" class="btn btn-secondary">Назад</button>
+                <span id="modalPageInfo" class="small text-muted">Страница 1 из 1</span>
+                <button type="button" id="modalNext" class="btn btn-secondary">Вперед</button>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-success btn-sm" onclick="exportDetailsToExcel()">Сохранить в Excel</button>
+            </div>
+
+            <div class="modal-sync">
+                <span class="modal-sync_label">Синхронизировать за:</span>
+                <input type="number" id="syncDaysInput" class="modal-sync_input" value="1" min="1" max="365">
+                <span class="modal-sync_label">дн.</span>
+                <button type="button" class="btn btn-secondary btn-sm modal-sync-btn" onclick="syncEmployeeTimesheets()">Синхронизировать</button>
+                <span id="syncStatus" class="modal-sync_status"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="currentDateFrom" th:value="${dateFrom}">
+<input type="hidden" id="currentDateTo" th:value="${dateTo}">
+</body>
+</html>

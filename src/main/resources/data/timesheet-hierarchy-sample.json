@@ -1,0 +1,99 @@
+{
+  "adLogin": "pavelin",
+  "employeeName": "Павел Иванов",
+  "managerName": null,
+  "managerAdLogin": null,
+  "divisionName": "Департамент IT",
+  "totalHours": 168.5,
+  "entriesCount": 62,
+  "colorClass": "hours-green",
+  "colorInEmail": "#d4edda",
+  "workPercent": 100.0,
+  "workPercentAverage": 95.5,
+  "workHoursSumForGroup": 420.0,
+  "countSubordinates": 4,
+  "hasSubordinates": true,
+  "approvalStatus": "APPROVED",
+  "level": 0,
+  "children": [
+    {
+      "adLogin": "sidorov",
+      "employeeName": "Сидоров Алексей",
+      "managerName": "Павел Иванов",
+      "managerAdLogin": "pavelin",
+      "divisionName": "Отдел разработки",
+      "totalHours": 38.0,
+      "entriesCount": 14,
+      "colorClass": "hours-green",
+      "workPercent": 95.0,
+      "countSubordinates": 2,
+      "hasSubordinates": true,
+      "approvalStatus": "APPROVED",
+      "level": 1,
+      "children": [
+        {
+          "adLogin": "petrov",
+          "employeeName": "Петров Иван",
+          "managerName": "Сидоров Алексей",
+          "managerAdLogin": "sidorov",
+          "divisionName": "Отдел разработки",
+          "totalHours": 36.5,
+          "entriesCount": 12,
+          "colorClass": "hours-green",
+          "workPercent": 91.0,
+          "hasSubordinates": false,
+          "approvalStatus": "AWAITING",
+          "level": 2,
+          "children": []
+        },
+        {
+          "adLogin": "kozlov",
+          "employeeName": "Козлов Дмитрий",
+          "managerName": "Сидоров Алексей",
+          "managerAdLogin": "sidorov",
+          "divisionName": "Отдел разработки",
+          "totalHours": 32.0,
+          "entriesCount": 10,
+          "colorClass": "hours-yellow",
+          "workPercent": 80.0,
+          "hasSubordinates": false,
+          "approvalStatus": "AWAITING",
+          "level": 2,
+          "children": []
+        }
+      ]
+    },
+    {
+      "adLogin": "volkov",
+      "employeeName": "Волков Сергей",
+      "managerName": "Павел Иванов",
+      "managerAdLogin": "pavelin",
+      "divisionName": "Отдел тестирования",
+      "totalHours": 40.0,
+      "entriesCount": 16,
+      "colorClass": "hours-green",
+      "workPercent": 100.0,
+      "countSubordinates": 1,
+      "hasSubordinates": true,
+      "approvalStatus": "APPROVED",
+      "level": 1,
+      "children": [
+        {
+          "adLogin": "morozov",
+          "employeeName": "Морозов Никита",
+          "managerName": "Волков Сергей",
+          "managerAdLogin": "volkov",
+          "divisionName": "Отдел тестирования",
+          "totalHours": 28.0,
+          "entriesCount": 9,
+          "colorClass": "hours-red",
+          "workPercent": 70.0,
+          "hasSubordinates": false,
+          "approvalStatus": "REJECTED",
+          "level": 2,
+          "children": []
+        }
+      ]
+    }
+  ]
+}
